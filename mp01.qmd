@@ -1,0 +1,225 @@
+---
+title: "mp01.qmd"
+format: html
+editor: visual
+---
+---
+title: "Transit Data Analysis"
+author: "Haina Boukari"
+date: "2024-09-25"
+format: html
+---
+
+## Task 3: Answering Instructor-Specified Questions with dplyr
+
+Using functions we have studied in class, including `filter`, `group_by`, `summarize`, and `arrange`, I answered the following questions:
+
+### What transit agency had the most total VRM in our data set?
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+
+# Assuming USAGE is your dataset
+# Find the transit agency with the most total VRM
+most_vrm_agency <- USAGE %>%
+  group_by(Agency) %>%
+  summarize(Total_VRM = sum(VRM, na.rm = TRUE)) %>%
+  arrange(desc(Total_VRM)) %>%
+  slice(1)
+
+print(most_vrm_agency) 
+
+Answer:
+MTA New York City Transit had the highest total Vehicle Revenue Miles (VRM) in the dataset, with a total of 10,832,855,350 VRM.
+
+### What transit mode had the most total VRM in our data set?
+
+# Find the transit mode with the most total VRM
+most_vrm_mode <- USAGE %>%
+  group_by(Mode) %>%
+  summarize(Total_VRM = sum(VRM, na.rm = TRUE)) %>%
+  arrange(desc(Total_VRM)) %>%
+  slice(1)
+
+print(most_vrm_mode)
+
+Answer:
+Bus had the highest total Vehicle Revenue Miles (VRM) in the dataset, with a total of 49,444,494,088 VRM.
+
+
+### How many trips were taken on the NYC Subway (Heavy Rail) in May 2024?
+
+# Filter for NYC Subway (Heavy Rail) in May 2024
+nyc_subway_may_2024 <- USAGE %>%
+  filter(Mode == "Heavy Rail", month == "2024-05") %>%
+  summarize(Total_Trips = sum(UPT, na.rm = TRUE))
+
+print(nyc_subway_may_2024)
+
+Answer:
+I couldn’t find data for May 2024.
+
+### What mode of transport had the longest average trip in May 2024?
+
+# Find the mode with the longest average trip in May 2024
+average_trip_length_may_2024 <- USAGE %>%
+  filter(month == "2024-05") %>%
+  group_by(Mode) %>%
+  summarize(Average_Trip_Length = sum(Passenger_Miles, na.rm = TRUE) / sum(UPT, na.rm = TRUE)) %>%
+  arrange(desc(Average_Trip_Length))
+
+print(average_trip_length_may_2024)
+
+Answer:
+N/A
+
+### How much did NYC subway ridership fall between April 2019 and April 2020?
+
+# Filter for NYC Subway (Heavy Rail) in April 2019 and April 2020
+nyc_subway_ridership_change <- USAGE %>%
+  filter(Mode == "Heavy Rail", month %in% c("2019-04", "2020-04")) %>%
+  group_by(month) %>%
+  summarize(Total_Trips = sum(UPT, na.rm = TRUE)) %>%
+  arrange(month)
+
+print(nyc_subway_ridership_change)
+
+Answer:
+Couldn’t get an output for this question but I plan to revisit my code and try again.
+
+#Task 4: Explore and Analyze
+
+Answer: 
+I tried to analyze some more transit facts but the files were not corresponding with my codes. Again, I plan to revisit the codes and update these results. But I wanted to find out:
+
+Total Number of Trips: The calculation of total trips resulted in 0, indicating that either the UPT values are missing or not correctly processed.
+Total Vehicle Miles: Similarly, the total vehicle miles calculation also resulted in 0.
+Plot of Total Trips by Month: Due to the lack of valid data, the plot did not show meaningful trends.
+
+# Total number of trips
+total_trips <- sum(USAGE$UPT, na.rm = TRUE)
+print(total_trips)
+
+# Total vehicle miles
+total_vrm <- sum(USAGE$VRM, na.rm = TRUE)
+print(total_vrm)
+
+# Total trips by transit mode
+mode_trips <- USAGE %>%
+  group_by(Mode) %>%
+  summarize(Total_Trips = sum(UPT, na.rm = TRUE)) %>%
+  arrange(desc(Total_Trips))
+
+print(mode_trips)
+
+# Total vehicle miles by transit agency
+agency_vrm <- USAGE %>%
+  group_by(Agency) %>%
+  summarize(Total_VRM = sum(VRM, na.rm = TRUE)) %>%
+  arrange(desc(Total_VRM))
+
+print(agency_vrm)
+
+# Total trips by month
+monthly_trips <- USAGE %>%
+  group_by(month) %>%
+  summarize(Total_Trips = sum(UPT, na.rm = TRUE)) %>%
+  arrange(month)
+
+# Plot monthly trips
+library(ggplot2)
+ggplot(monthly_trips, aes(x = month, y = Total_Trips)) +
+  geom_line() +
+  labs(title = "Total Trips by Month", x = "Month", y = "Total Trips") +
+  theme_minimal()
+
+#Task 6: Farebox Recovery Among Major Systems
+
+### Which transit system (agency and mode) had the most UPT in 2022? 
+# Filter for major transit systems
+major_systems <- USAGE_AND_FINANCIALS %>%
+  filter(UPT >= 400000)
+
+# Find the transit system with the most UPT in 2022
+most_upt <- major_systems %>%
+  arrange(desc(UPT)) %>%
+  slice(1)
+
+print(most_upt)
+
+Answer:
+Unable to determine as the major_systems table came up empty. This indicates there might be an issue with the filtering criteria or the dataset.
+
+### Which transit system (agency and mode) had the highest farebox recovery, defined as the highest ratio of Total Fares to Expenses?
+
+# Calculate farebox recovery ratio and find the highest
+highest_farebox_recovery <- major_systems %>%
+  mutate(Farebox_Recovery = Total_Fares / Expenses) %>%
+  arrange(desc(Farebox_Recovery)) %>%
+  slice(1)
+
+print(highest_farebox_recovery)
+
+Answer:
+I got an error in calculation due to missing or incorrectly named columns (Total_Fares and Expenses). Unable to determine the highest farebox recovery ratio.
+
+### Which transit system (agency and mode) has the lowest expenses per UPT?
+
+# Calculate expenses per UPT and find the lowest
+lowest_expenses_per_upt <- major_systems %>%
+  mutate(Expenses_per_UPT = Expenses / UPT) %>%
+  arrange(Expenses_per_UPT) %>%
+  slice(1)
+
+print(lowest_expenses_per_upt)
+
+Answer:
+Error in calculation due to missing or incorrectly named columns. Unable to determine the lowest expenses per UPT.
+
+### Which transit system (agency and mode) has the highest total fares per UPT?
+# Calculate total fares per UPT and find the highest
+highest_fares_per_upt <- major_systems %>%
+  mutate(Fares_per_UPT = Total_Fares / UPT) %>%
+  arrange(desc(Fares_per_UPT)) %>%
+  slice(1)
+
+print(highest_fares_per_upt)
+
+Answer:
+Error in calculation due to missing or incorrectly named columns. Unable to determine the highest total fares per UPT.
+
+### Which transit system (agency and mode) has the lowest expenses per VRM?
+
+Answer:
+Error in calculation due to missing or incorrectly named columns
+
+# Calculate expenses per VRM and find the lowest
+lowest_expenses_per_vrm <- major_systems %>%
+  mutate(Expenses_per_VRM = Expenses / VRM) %>%
+  arrange(Expenses_per_VRM) %>%
+  slice(1)
+
+print(lowest_expenses_per_vrm)
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
